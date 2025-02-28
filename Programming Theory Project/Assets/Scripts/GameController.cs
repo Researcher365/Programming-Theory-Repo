@@ -50,37 +50,40 @@ public struct ScreenStatuses
 
 public class GameController: MonoBehaviour
 {
-    public GameObject boardSurface;
-    Vector3 bounds;
+    private const float CAMERA_ROTATION_SPEED = 40f;
+    private const int ENGINE_MAX_CALCULATION_TIME_MS = 5 * 60 * 1000; // 5 минут
 
-    public Camera mainCamera;
-    public GameObject[] piecesPrefabs;
-    public ChessBoard chessBoard;
+    public GameObject boardSurface;// Поверхность игровой доски
+    Vector3 bounds;// Границы доски
+
+    public Camera mainCamera; // Основная камера
+    public GameObject[] piecesPrefabs; // Префабы шахматных фигур
+    public ChessBoard chessBoard; // Объект, представляющий шахматную доску
+
+    // Типы контроллеров для белых и черных (человек или движок)
     public ChessSideControllerType whiteController, blackController;
 
-    private const uint boardHorizontalSquaresCount = 8;
-    private const uint boardVerticalSquaresCount = 8;
-    private bool cancelEngineCalculationRequested = false;
+    private const uint boardHorizontalSquaresCount = 8; // Количество клеток по горизонтали
+    private const uint boardVerticalSquaresCount = 8;// Количество клеток по вертикали
+    private bool cancelEngineCalculationRequested = false;// Флаг запроса на отмену расчета хода движком
 
-    [SerializeField] private ChessPiece selectedPiece;
-    [SerializeField] ChessEngineInterface engineInterface;
-    [SerializeField] public GameObject pieceChoiceScreen;
-    [SerializeField] public GameObject mainMenuScreen;
-    [SerializeField] public GameObject settingsScreen;
-    [SerializeField] public GameObject gameControlScreen;
-    [SerializeField] TMP_Dropdown levelDropdown;
-    [SerializeField] TMP_Text counterText;
+    [SerializeField] private ChessPiece selectedPiece;// Выбранная в данный момент фигура
+    [SerializeField] ChessEngineInterface engineInterface;// Интерфейс взаимодействия с шахматным движком
+    [SerializeField] public GameObject pieceChoiceScreen;// Экран выбора фигуры (при превращении пешки)
+    [SerializeField] public GameObject mainMenuScreen;// Экран главного меню
+    [SerializeField] public GameObject settingsScreen;// Экран настроек
+    [SerializeField] public GameObject gameControlScreen;// Экран управления игрой
+    [SerializeField] TMP_Dropdown levelDropdown;// Выпадающий список уровней сложности
+    [SerializeField] TMP_Text counterText;// Текст для отображения счетчика фигур
+    [SerializeField] public CinemachineVirtualCamera playerCamera;// Виртуальная камера для игрока
+    [SerializeField] public PiecesCounter piecesCounter;// Счетчик фигур
 
-    public PiecesCounter piecesCounter;
-
-    [SerializeField] public CinemachineVirtualCamera playerCamera;
-
-    Stack<ScreenStatuses> screenStatusStack;
-
-    private BoardCoords pawnTransformCoord;
+    Stack<ScreenStatuses> screenStatusStack;// Стек для хранения состояний экранов
+    private BoardCoords pawnTransformCoord;// Координаты пешки для трансформации
 
     //==== GETTERS
-
+    
+    // Свойство, определяющее, является ли текущий ход ходом движка
     public bool isEngineTurn
     {
         get {
@@ -92,6 +95,7 @@ public class GameController: MonoBehaviour
 
     //==== METHODS
 
+    // Переворачивает доску
     public void FlipBoard()
     {
         GameObject target = GameObject.Find("TargetPoint");
@@ -100,6 +104,7 @@ public class GameController: MonoBehaviour
         target.transform.Rotate(Vector3.up, 180);
     }
 
+    // Инициализирует новую игру
     public void InitGame()
     {
         if (chessBoard != null)
@@ -112,20 +117,17 @@ public class GameController: MonoBehaviour
         GoToScreen(mainMenuScreen);
     }
 
-    // Starts new game after menu-button clicked.
+    // Начинает новую игру после нажатия кнопки в меню
     public void StartNewGame(int gameType)
     {
         screenStatusStack.Clear();
         screenStatusStack.Push(new ScreenStatuses(this));
-        
-
-
+       
         chessBoard.SetStartChessPosition();
 
         piecesCounter = new PiecesCounter();
         piecesCounter.Count(chessBoard);
         counterText.text = piecesCounter.ToString();
-
 
         switch (gameType) {
             case 0:
@@ -150,6 +152,7 @@ public class GameController: MonoBehaviour
         GoToScreen(gameControlScreen);
     }
 
+    // Обновляет позицию камеры в зависимости от активного экрана
     public void UpdateCameraPosition()
     {
         playerCamera.Priority = 
@@ -157,12 +160,7 @@ public class GameController: MonoBehaviour
             || settingsScreen.activeInHierarchy) ? 1 : 10;
     }
 
-    void LookToMainMenuScreen(bool isActive)
-    {
-        mainMenuScreen.SetActive(isActive);
-        UpdateCameraPosition();
-    }
-
+    // Переключает на указанный экран и скрывает остальные
     void GoToScreen(GameObject screen)
     {
         ScreenStatuses statuses = new ScreenStatuses(this);
@@ -176,20 +174,25 @@ public class GameController: MonoBehaviour
         UpdateCameraPosition();
     }
 
+    // Размер клетки по оси X
     public float squareSizeX
     {
         get { return 2.0f * bounds.x / chessBoard.iSize; }
     }
+    
+    // Размер клетки по оси Z
     public float squareSizeZ
     {
         get { return 2.0f * bounds.x / chessBoard.iSize; }
     }
 
+    // Получает позицию центра клетки по координатам
     public Vector3 GetSquareCenterPosition(BoardCoords coords)
     {
         return GetSquareCenterPosition(coords.i, coords.j);
     }
 
+    // Получает позицию центра клетки по индексам i, j
     public Vector3 GetSquareCenterPosition(int i, int j)
     {
         Vector3 pos = new Vector3(0, 0, 0);
@@ -198,6 +201,7 @@ public class GameController: MonoBehaviour
         return pos;
     }
 
+    // Получает координаты доски по позиции клика мышью
     public BoardCoords GetBoardCoordinates(Vector3 mouseClickPosition)
     {
         BoardCoords coords = new BoardCoords(-1, -1);
@@ -216,6 +220,7 @@ public class GameController: MonoBehaviour
         return coords;
     }
 
+    // Создает новую 3D фигуру на доске
     public ChessPiece CreateNewPiece3D(int prefabIndex, BoardCoords coords)
     {
         GameObject prefab = piecesPrefabs[prefabIndex];
@@ -227,46 +232,129 @@ public class GameController: MonoBehaviour
         return chessPiece;
     }
 
+    // Обрабатывает нажатие на клетку доски или фигуру
+    //void OnBoardSquareOrPieceDown(BoardCoords clickedCoords)
+    //{
+    //    Debug.Log("board coords: " + clickedCoords.ToString());
+    //    ChessPiece pieceOnClickedSquare = chessBoard.GetPiece(clickedCoords);
+
+
+    //    if (selectedPiece != null && selectedPiece != pieceOnClickedSquare)
+    //        selectedPiece.Deselect();
+
+    //    // if there is a piece on clicked position and it could be selected
+    //    if (!chessBoard.IsSquareEmpty(clickedCoords) && pieceOnClickedSquare.IsAvailableForMoving()) {
+
+    //        pieceOnClickedSquare.SwitchSelection();
+    //        if (pieceOnClickedSquare.isSelected)
+    //            selectedPiece = pieceOnClickedSquare;
+    //        else
+    //            selectedPiece = null;
+    //    }
+    //    // if there is a selected and no the same color piece on clicked square
+    //    else if (selectedPiece != null) {
+
+    //        ChessMove move = new ChessMove(selectedPiece, clickedCoords);
+    //        ChessBoard virtualBoard = chessBoard.VirtualBoardAfterFreeMove(move);
+
+    //        if (move.IsLegal() && !(virtualBoard.IsCheckOnTheBoard(selectedPiece.pieceColor)))
+    //            // moving selected piece if possible and no check
+    //            MakeInteractiveMove(move);
+
+    //        virtualBoard.Clear(); // destroying temp pieces
+    //    }
+
+    //    piecesCounter.Count(chessBoard);
+    //    counterText.text = piecesCounter.ToString();
+    //}
+
+    
+
+    /// Обрабатывает нажатие на клетку доски или шахматную фигуру
+    /// <param name="clickedCoords">Координаты клика на доске</param>
     void OnBoardSquareOrPieceDown(BoardCoords clickedCoords)
     {
-        Debug.Log("board coords: " + clickedCoords.ToString());
+        Debug.Log($"Клик на координатах: {clickedCoords}");
+
+        // Получаем фигуру на выбранной клетке
         ChessPiece pieceOnClickedSquare = chessBoard.GetPiece(clickedCoords);
 
+        // 1. Обрабатываем отмену выбора предыдущей фигуры, если нужно
+        HandlePreviousSelection(pieceOnClickedSquare);
 
-        if (selectedPiece != null && selectedPiece != pieceOnClickedSquare)
-            selectedPiece.Deselect();
-
-        // if there is a piece on clicked position and it could be selected
-        if (!chessBoard.IsSquareEmpty(clickedCoords) && pieceOnClickedSquare.IsAvailableForMoving()) {
-
-            pieceOnClickedSquare.SwitchSelection();
-            if (pieceOnClickedSquare.isSelected)
-                selectedPiece = pieceOnClickedSquare;
-            else
-                selectedPiece = null;
+        // 2. Пытаемся выбрать фигуру или сделать ход
+        if (IsSelectablePiece(clickedCoords, pieceOnClickedSquare)) {
+            HandlePieceSelection(pieceOnClickedSquare);
         }
-        // if there is a selected and no the same color piece on clicked square
         else if (selectedPiece != null) {
-
-            ChessMove move = new ChessMove(selectedPiece, clickedCoords);
-            ChessBoard virtualBoard = chessBoard.VirtualBoardAfterFreeMove(move);
-
-            if (move.IsLegal() && !(virtualBoard.IsCheckOnTheBoard(selectedPiece.pieceColor)))
-                // moving selected piece if possible and no check
-                MakeInteractiveMove(move);
-
-            virtualBoard.Clear(); // destroying temp pieces
+            TryMakeMove(clickedCoords);
         }
 
+        // 3. Обновляем счетчик фигур
+        UpdatePiecesCounter();
+    }
+
+    /// Обрабатывает предыдущий выбор фигуры
+    private void HandlePreviousSelection(ChessPiece clickedPiece)
+    {
+        // Если была выбрана фигура и мы кликнули не по ней же
+        if (selectedPiece != null && selectedPiece != clickedPiece) {
+            selectedPiece.Deselect();
+        }
+    }
+
+    /// Проверяет, является ли фигура доступной для выбора
+    private bool IsSelectablePiece(BoardCoords coords, ChessPiece piece)
+    {
+        return !chessBoard.IsSquareEmpty(coords) && piece.IsAvailableForMoving();
+    }
+
+
+    /// Обрабатывает выбор фигуры
+    private void HandlePieceSelection(ChessPiece piece)
+    {
+        piece.SwitchSelection();
+        selectedPiece = piece.isSelected ? piece : null;
+    }
+
+    /// Пытается сделать ход выбранной фигурой
+    private void TryMakeMove(BoardCoords targetCoords)
+    {
+        ChessMove move = new ChessMove(selectedPiece, targetCoords);
+
+        // Создаем виртуальную доску для проверки валидности хода
+        ChessBoard virtualBoard = chessBoard.VirtualBoardAfterFreeMove(move);
+
+        try {
+            bool isLegalMove = move.IsLegal();
+            bool causesCheck = virtualBoard.IsCheckOnTheBoard(selectedPiece.pieceColor);
+
+            if (isLegalMove && !causesCheck) {
+                MakeInteractiveMove(move);
+            }
+            else if (!isLegalMove) {
+                Debug.Log("Недопустимый ход!");
+            }
+            else if (causesCheck) {
+                Debug.Log("Ход приведет к шаху своему королю!");
+            }
+        }
+        finally {
+            // Всегда очищаем виртуальную доску
+            virtualBoard.Clear();
+        }
+    }
+
+    /// Обновляет счетчик фигур и отображает его на UI
+    private void UpdatePiecesCounter()
+    {
         piecesCounter.Count(chessBoard);
         counterText.text = piecesCounter.ToString();
     }
 
+    // Обрабатывает изменение уровня сложности
     public void OnLevelChanged()
     {
-        //OnDropdownValueChanged onDropdownValueChanged;
-        //GameObject.Find("Dropdown").GetComponent<DropdownTextMeshPro>();
-
         string elo = levelDropdown.value switch {
             0 => "2100",
             1 => "2250",
@@ -282,12 +370,14 @@ public class GameController: MonoBehaviour
         Debug.Log($"New engine's ELO: {elo}");
     }
 
+    // Обрабатывает нажатие на кнопку настроек
     public void OnSettingsClick()
     {
         screenStatusStack.Push(new ScreenStatuses(this));
         GoToScreen(settingsScreen);
     }
 
+    // Переключает режим игры между человеком и движком
     void SwitchEngineEnabled()
     {
         if (chessBoard.whiteToMove) {
@@ -305,9 +395,36 @@ public class GameController: MonoBehaviour
 
     }
 
+    // Обрабатывает ввод игрока
     void OnPlayerInput()
     {
-        // Independent input
+        HandleSystemInput();
+        HandleCameraControls();
+        HandleGameInput();
+    }
+
+    // Обрабатывает ввод игрока
+    void HandleSystemInput()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            HandleEscapeKey();
+        }
+
+        if (Input.GetKeyDown(KeyCode.E)) {
+            CancelEngineCalculation();
+            SwitchEngineEnabled();
+        }
+    }
+    // Обрабатывает отмену расчета движка
+    private void CancelEngineCalculation()
+    {
+        cancelEngineCalculationRequested = true;
+        engineInterface.StopCalculation();
+    }
+
+    // Обрабатывает нажатие на кнопку ESC
+    private void HandleEscapeKey()
+    {
         if (Input.GetKeyDown(KeyCode.Escape)) {
             ScreenStatuses status = new ScreenStatuses(this);
 
@@ -327,39 +444,86 @@ public class GameController: MonoBehaviour
             }
 
         }
-
-        if (Input.GetKeyDown(KeyCode.E)) {
-            cancelEngineCalculationRequested = true;
-            engineInterface.StopCalculation();
-            SwitchEngineEnabled();
-        }
-
-        if (Input.GetMouseButtonDown(1)) // Right mouse click
-            FlipBoard();
-        float horInput = Input.GetAxis("Horizontal");
-        GameObject.Find("TargetPoint").transform.Rotate(Vector3.up, -horInput * 40 * Time.deltaTime);
-
-        // Conditional input
-        if (chessBoard.isActive && !isEngineTurn) {
-            if (Input.GetMouseButtonDown(0)) // Left mouse click
-            {
-                Vector3 mousePos = Input.mousePosition;
-                BoardCoords coords = GetBoardCoordinates(mousePos);
-                if (coords.IsInsideBoard(chessBoard))
-                    OnBoardSquareOrPieceDown(coords);
-                else
-                    Debug.Log("out of board!");
-
-            }
-        }
-
-
     }
 
+    // Обрабатывает ввод игрока для управления камерой
+    void HandleCameraControls()
+    {
+        if (Input.GetMouseButtonDown(1)) // Right mouse click
+            FlipBoard();
+
+        float horInput = Input.GetAxis("Horizontal");
+        GameObject.Find("TargetPoint").transform.Rotate(Vector3.up, -horInput * CAMERA_ROTATION_SPEED * Time.deltaTime);
+    }
+
+    void HandleGameInput()
+    {
+        if (chessBoard.isActive && !isEngineTurn && Input.GetMouseButtonDown(0)) {
+            Vector3 mousePos = Input.mousePosition;
+            BoardCoords coords = GetBoardCoordinates(mousePos);
+            if (coords.IsInsideBoard(chessBoard))
+                OnBoardSquareOrPieceDown(coords);
+            else
+                Debug.Log("out of board!");
+        }
+    }
+    //void OnPlayerInput()
+    //{
+    //    // Independent input
+    //    if (Input.GetKeyDown(KeyCode.Escape)) {
+    //        ScreenStatuses status = new ScreenStatuses(this);
+
+    //        if (gameControlScreen.activeInHierarchy) {
+    //            screenStatusStack.Push(status);
+    //            GoToScreen(mainMenuScreen);
+    //        }
+    //        else if (screenStatusStack.Count > 0) {
+    //            screenStatusStack.Pop().RecoverToGameController(this);
+    //        }
+    //        else {
+    //            screenStatusStack.Push(status);
+    //            GoToScreen(mainMenuScreen);
+
+    //            cancelEngineCalculationRequested = true;
+    //            engineInterface.StopCalculation();
+    //        }
+
+    //    }
+
+    //    if (Input.GetKeyDown(KeyCode.E)) {
+    //        cancelEngineCalculationRequested = true;
+    //        engineInterface.StopCalculation();
+    //        SwitchEngineEnabled();
+    //    }
+
+    //    if (Input.GetMouseButtonDown(1)) // Right mouse click
+    //        FlipBoard();
+    //    float horInput = Input.GetAxis("Horizontal");
+    //    GameObject.Find("TargetPoint").transform.Rotate(Vector3.up, -horInput * 40 * Time.deltaTime);
+
+    //    // Conditional input
+    //    if (chessBoard.isActive && !isEngineTurn) {
+    //        if (Input.GetMouseButtonDown(0)) // Left mouse click
+    //        {
+    //            Vector3 mousePos = Input.mousePosition;
+    //            BoardCoords coords = GetBoardCoordinates(mousePos);
+    //            if (coords.IsInsideBoard(chessBoard))
+    //                OnBoardSquareOrPieceDown(coords);
+    //            else
+    //                Debug.Log("out of board!");
+
+    //        }
+    //    }
+
+
+    //}
+
+    // Корутина, запускаемая после завершения движения фигуры
     IEnumerator OnFinishPieceMovement()
     {
         while (!selectedPiece.isOnTargetPosition()) {
-            yield return new YieldInstruction();
+            //yield return new YieldInstruction();
+            yield return null;
         }
 
 
@@ -370,6 +534,7 @@ public class GameController: MonoBehaviour
             chessBoard.isActive = true;
     }
 
+    // Делает ход без трансформации пешки
     void MakeMoveWithoutTransformation(ChessMove move)
     {
         selectedPiece = move.piece;
@@ -395,6 +560,8 @@ public class GameController: MonoBehaviour
 
     }
 
+
+    // Делает интерактивный ход игрока
     void MakeInteractiveMove(ChessMove move)
     {
         chessBoard.isActive = false;
@@ -408,25 +575,34 @@ public class GameController: MonoBehaviour
         StartCoroutine(OnFinishPieceMovement());
     }
 
+    // Запрашивает трансформацию пешки
     void AskPawnTransformation(BoardCoords coords)
     {
         GoToScreen(pieceChoiceScreen);
         pawnTransformCoord = coords;
     }
 
-    public void TransformPawn(ChessPiece selectedPiece, PieceType toPieceType)
+    // Объединение методов TransformPawn:
+    public void TransformPawn(ChessPiece piece, PieceType toPieceType, BoardCoords coords)
     {
         // replace old piece with a new one
-        chessBoard.PutNewPiece(selectedPiece.pieceColor, toPieceType, pawnTransformCoord);
-        Destroy(selectedPiece.gameObject);
-    }
-    public void TransformPawn(ChessMove move)
-    {
-        // replace old piece with a new one
-        chessBoard.PutNewPiece(move.piece.pieceColor, move.requestedTransformPiece, move.to);
-        Destroy(move.piece.gameObject);
+        chessBoard.PutNewPiece(piece.pieceColor, toPieceType, coords);
+        Destroy(piece.gameObject);
     }
 
+    // Трансформирует пешку в выбранную фигуру
+    public void TransformPawn(ChessPiece selectedPiece, PieceType toPieceType)
+    {
+        TransformPawn(selectedPiece, toPieceType, pawnTransformCoord);
+    }
+
+    // Трансформирует пешку согласно информации в ходе
+    public void TransformPawn(ChessMove move)
+    {
+        TransformPawn(move.piece, move.requestedTransformPiece, move.to);
+    }
+
+    // Обрабатывает клик по кнопке выбора фигуры для трансформации пешки
     public void PawnTransformationOnClick(int pieceType)
     {
         // replace old piece with a new one
@@ -435,6 +611,7 @@ public class GameController: MonoBehaviour
         GoToScreen(gameControlScreen);
     }
 
+    // Выполняет ход, сделанный движком
     void MakeEngineMove(ChessMove move)
     {
         // 1. make move without transformation
@@ -449,11 +626,12 @@ public class GameController: MonoBehaviour
         selectedPiece = null;
     }
 
+    // Асинхронно получает ход от шахматного движка
     private Task<ChessMove> EngineCalculatingMove()
     {
         Task<ChessMove> task = Task.Run(() => {
 
-            ChessMove move = engineInterface.GetRecommendedMove(chessBoard, 5 * 60 * 1000);
+            ChessMove move = engineInterface.GetRecommendedMove(chessBoard, ENGINE_MAX_CALCULATION_TIME_MS);
 
             return move; // 60 sec maximun            
         });
@@ -461,6 +639,7 @@ public class GameController: MonoBehaviour
         return task;
     }
 
+    // Обрабатывает ввод от движка
     async void OnEngineInput()
     {
         chessBoard.isActive = false;
@@ -477,11 +656,14 @@ public class GameController: MonoBehaviour
         chessBoard.isActive = true;
     }
 
-    bool SelectedPieceOnTargetPosition()
+    // Проверяет, находится ли выбранная фигура на целевой позиции
+    bool IsSelectedPieceOnTargetPosition()
     {
         return (selectedPiece != null && selectedPiece.isOnTargetPosition());
     }
 
+
+    // Метод, вызываемый при старте
     // Start is called before the first frame update
     void Start()
     {
@@ -495,13 +677,14 @@ public class GameController: MonoBehaviour
         cancelEngineCalculationRequested = false;
     }
 
+    // Метод, вызываемый каждый кадр
     // Update is called once per frame
     void Update()
     {
         OnPlayerInput();
 
         if (chessBoard.isActive && isEngineTurn)
-            if (selectedPiece == null || SelectedPieceOnTargetPosition())
+            if (selectedPiece == null || IsSelectedPieceOnTargetPosition())
                 OnEngineInput();
     }
 }

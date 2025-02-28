@@ -43,8 +43,8 @@ MonoBehaviour:
     y: 0
     width: 380
     height: 532
-  m_MinSize: {x: 200, y: 200}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 202, y: 221}
+  m_MaxSize: {x: 4002, y: 4021}
   m_ActualView: {fileID: 20}
   m_Panes:
   - {fileID: 20}
@@ -74,7 +74,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 50}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 2947
+  controlID: 19
   draggingID: 0
 --- !u!114 &4
 MonoBehaviour:
@@ -127,7 +127,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 50}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 3004
+  controlID: 52
   draggingID: 0
 --- !u!114 &6
 MonoBehaviour:
@@ -179,7 +179,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 2946
+  controlID: 51
   draggingID: 0
 --- !u!114 &8
 MonoBehaviour:
@@ -230,7 +230,7 @@ MonoBehaviour:
     height: 30
   m_MinSize: {x: 0, y: 0}
   m_MaxSize: {x: 0, y: 0}
-  m_LastLoadedLayoutName: Researcher Layout
+  m_LastLoadedLayoutName: 
 --- !u!114 &10
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -255,7 +255,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 3039
+  controlID: 50
   draggingID: 0
 --- !u!114 &11
 MonoBehaviour:
@@ -325,8 +325,8 @@ MonoBehaviour:
     y: 0
     width: 368.80005
     height: 1010.80005
-  m_MinSize: {x: 275, y: 50}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 276, y: 71}
+  m_MaxSize: {x: 4001, y: 4021}
   m_ActualView: {fileID: 17}
   m_Panes:
   - {fileID: 17}
@@ -564,7 +564,8 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SkipHidden: 0
     m_SearchArea: 1
-    m_Folders: []
+    m_Folders:
+    - Assets/Scripts
     m_Globs: []
     m_OriginalText: 
     m_ImportLogFlags: 0
@@ -581,7 +582,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: b4650000
     m_LastClickedID: 26036
-    m_ExpandedIDs: ffffffff000000008a600000ae600000b4600000d2600000d4600000d6600000d8600000f0600000f4600000fa600000
+    m_ExpandedIDs: 000000007a5f00007c5f00007e5f0000805f0000825f0000845f0000865f0000885f00008a5f00008c5f0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -609,7 +610,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: ffffffff000000008a600000ae600000b4600000d2600000d4600000d6600000d8600000f0600000f4600000fa600000
+    m_ExpandedIDs: ffffffff000000007a5f00007e5f0000805f0000825f0000845f0000865f0000885f00008a5f00008c5f0000da5f0000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -995,9 +996,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 15.548799, y: 0.83246994, z: 2.9376717}
+    m_Target: {x: 960, y: 55.199966, z: 0}
     speed: 2
-    m_Value: {x: 15.548799, y: 0.83246994, z: 2.9376717}
+    m_Value: {x: 960, y: 55.199966, z: 0}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -1043,13 +1044,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.093756914, y: 0.90126085, z: -0.3448161, w: -0.24507023}
+    m_Target: {x: 0.029400269, y: -0.018896583, z: 0.00055879477, w: 0.9994019}
     speed: 2
-    m_Value: {x: -0.09375602, y: 0.90125227, z: -0.3448128, w: -0.2450679}
+    m_Value: {x: 0.029399887, y: -0.018896338, z: 0.0005587875, w: 0.99938893}
   m_Size:
-    m_Target: 18.012457
+    m_Target: 375.2366
     speed: 2
-    m_Value: 18.012457
+    m_Value: 375.2366
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -1110,24 +1111,24 @@ MonoBehaviour:
     m_OverlaysVisible: 1
   m_SceneHierarchy:
     m_TreeViewState:
-      scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: 60eaffff
-      m_LastClickedID: -5536
-      m_ExpandedIDs: 80f4ffff14fbffffb05d0000be5d0000
+      scrollPos: {x: 0, y: 38}
+      m_SelectedIDs: 34460000
+      m_LastClickedID: 0
+      m_ExpandedIDs: 10fbffffea5c0000f85d0000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
-        m_Name: Bishop  Black
-        m_OriginalName: Bishop  Black
+        m_Name: 
+        m_OriginalName: 
         m_EditFieldRect:
           serializedVersion: 2
           x: 0
           y: 0
           width: 0
           height: 0
-        m_UserData: -2950
+        m_UserData: 0
         m_IsWaitingForDelay: 0
         m_IsRenaming: 0
-        m_OriginalEventType: 0
+        m_OriginalEventType: 11
         m_IsRenamingFilename: 0
         m_ClientGUIView: {fileID: 2}
       m_SearchString: 
