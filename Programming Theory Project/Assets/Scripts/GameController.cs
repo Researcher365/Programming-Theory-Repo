@@ -400,7 +400,7 @@ public class GameController: MonoBehaviour
     {
         HandleSystemInput();
         HandleCameraControls();
-        HandleGameInput();
+        HandlePieceMovementInput();
     }
 
     // Обрабатывает ввод игрока
@@ -456,7 +456,7 @@ public class GameController: MonoBehaviour
         GameObject.Find("TargetPoint").transform.Rotate(Vector3.up, -horInput * CAMERA_ROTATION_SPEED * Time.deltaTime);
     }
 
-    void HandleGameInput()
+    void HandlePieceMovementInput()
     {
         if (chessBoard.isActive && !isEngineTurn && Input.GetMouseButtonDown(0)) {
             Vector3 mousePos = Input.mousePosition;
@@ -568,7 +568,7 @@ public class GameController: MonoBehaviour
 
         MakeMoveWithoutTransformation(move);
         // if piece must be transformed...
-        if (move.piece.MustBeTransformed()) {
+        if (move.piece.MustBePromoted()) {
             // ask user, which type of piece he wanna put?
             AskPawnTransformation(move.to);
         }
@@ -617,7 +617,7 @@ public class GameController: MonoBehaviour
         // 1. make move without transformation
         MakeMoveWithoutTransformation(move);
         // 2. if piece must be transformed...
-        if (move.piece.MustBeTransformed()) {
+        if (move.piece.MustBePromoted()) {
             // transform pawn without asking
             TransformPawn(move);
         }

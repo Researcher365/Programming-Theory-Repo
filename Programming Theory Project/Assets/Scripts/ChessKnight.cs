@@ -5,21 +5,28 @@ using System.Linq;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Represents a knight chess piece with its specific L-shaped movement pattern
+    /// </summary>
     public class ChessKnight: ChessPiece, IChessPiece
     {
+        /// <summary>
+        /// Generates all potential moves for a knight
+        /// </summary>
+        /// <returns>List of all potential knight moves in L-shape pattern</returns>
         public override List<ChessMove> GenerateAllPotentialMoves()
         {
             var moves = new List<ChessMove>();
-            int[] moveLength = new int[] { -2, -1, 1, 2 };
+            int[] moveLength = new int[] { -2, -1, 1, 2 }; // Possible offsets for knight's L-shaped movement
 
-            // Перебираем все возможные ходы коня
+            // Iterate through all possible L-shaped knight movements
             foreach (int i in moveLength) {
                 foreach (int j in moveLength) {
-                    // Исключаем ходы, где i и j равны по модулю, так как это не соответствует движению коня
+                    // Knight moves in L-shape pattern, so i and j must have different absolute values
                     if (Mathf.Abs(i) != Mathf.Abs(j)) {
                         BoardCoords newCoords = coords + new BoardCoords(i, j);
 
-                        // Проверяем, находится ли новая позиция внутри доски и свободна ли она или занята фигурой противника
+                        // Check if the new position is inside the board and either empty or occupied by an opponent's piece
                         if (newCoords.IsInsideBoard(chessBoard)) {
                             ChessPiece pieceAtDestination = chessBoard.GetPiece(newCoords.i, newCoords.j);
                             if (chessBoard.IsSquareEmpty(newCoords) || pieceAtDestination.pieceColor != pieceColor) {
@@ -33,20 +40,30 @@ namespace Assets.Scripts
             return moves;
         }
 
+        /// <summary>
+        /// Generates capture opportunities for a knight
+        /// For knights, capture moves are identical to regular moves since they can jump over pieces
+        /// </summary>
+        /// <returns>List of potential capture moves</returns>
         public override List<ChessMove> GenerateCaptureOpportunities()
         {
-            // Логика движения и взятия для коня одинакова
+            // Knights can capture any piece they can move to, so the logic is the same as for regular moves
             return GenerateAllPotentialMoves();
         }
 
+        /// <summary>
+        /// Generates all legal moves for this knight
+        /// </summary>
+        /// <returns>List of all legal knight moves</returns>
         public override List<ChessMove> GeneratePossibleMoves()
         {
             var moves = GenerateAllPotentialMoves();
 
-            // Use LINQ to filter moves
+            // Use LINQ to filter moves - keep only those where destination is inside the board
+            // and either empty or contains an opponent's piece
             var result = moves
                 .Where(move => move.to.IsInsideBoard(chessBoard) &&
-                               (move.attackedPiece == null || move.attackedPiece.pieceColor != pieceColor))
+                               (chessBoard.IsSquareEmpty(move.to) || move.attackedPiece.pieceColor != pieceColor))
                 .ToList();
 
             return result;

@@ -8,37 +8,46 @@ namespace Assets.Scripts
 {
     public class ChessBoard
     {
-        private ChessPiece[,] board;
-        public GameController gameController;
-        [SerializeField] public bool isActive;
-        public int moveNumber;
-        public bool _whiteToMove; // false mean - black to move
+        private ChessPiece[,] board; // 2D array representing the chessboard with chess pieces
+        public GameController gameController; // Reference to the game controller managing the game state
+        [SerializeField] public bool isActive; // Indicates if the chessboard is currently active
+        public int moveNumber; // Tracks the number of moves made in the game
+        public bool _whiteToMove; // Indicates if it's white's turn to move; false means it's black's turn
 
-        public ChessPiece whiteKing;
-        public ChessPiece blackKing;
 
-        public BoardCoords enPassant;
+        public ChessPiece whiteKing; // Reference to the white king piece on the board
+        public ChessPiece blackKing; // Reference to the black king piece on the board
 
-        public bool blackToMove
+        public BoardCoords enPassant; // Coordinates for en passant capture
+
+        // Property to check if it's black's turn to move
+        public bool blackToMove 
         {
             get { return !_whiteToMove; }
             set { _whiteToMove = !value; }
         }
+
+        // Property to check if it's white's turn to move
         public bool whiteToMove
         {
             get { return _whiteToMove; }
             set { _whiteToMove = value; }
         }
 
+        // Property to get the number of rows on the board
         public uint iSize { get { return (uint)board.GetLength(0); } }
+        
+        // Property to get the number of columns on the board
         public uint jSize { get { return (uint)board.GetLength(1); } }
 
+        // Constructor to initialize the chessboard with specified dimensions
         public ChessBoard(uint iSize, uint jSize)
         {
             board = new ChessPiece[iSize, jSize];
             gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<GameController>();
         }
 
+        // Retrieves the chess piece at the specified coordinates
         public ChessPiece GetPiece(int i, int j)
         {
             BoardCoords coords = new BoardCoords(i, j);
@@ -47,7 +56,8 @@ namespace Assets.Scripts
 
             return null;
         }
-        
+
+        // Retrieves the chess piece at the specified board coordinates
         public ChessPiece GetPiece(BoardCoords coords)
         {
             if (coords.IsInsideBoard(board))
@@ -55,6 +65,8 @@ namespace Assets.Scripts
 
             return null;
         }
+
+        // Checks if the specified square is empty
         public bool IsSquareEmpty(BoardCoords coords)
         {
             if (coords.IsInsideBoard(board)) {
@@ -63,11 +75,13 @@ namespace Assets.Scripts
             return false;
         }
 
+        // Switches the turn to the opposite side
         public void SwitchMoveSide()
         {
             _whiteToMove = !_whiteToMove;
         }
 
+        // Places a chess piece at the specified coordinates
         public void SetPiece(ChessPiece piece, BoardCoords coords)
         {
             if (coords.IsInsideBoard(board)) {
@@ -77,6 +91,7 @@ namespace Assets.Scripts
                 Debug.Log("trying to set piece out of bounds of chessboard!");
         }
 
+        // Checks if the path for a piece's move is correct and free of obstacles
         public bool WayCorrectAndFree(ChessPiece selectedPiece, BoardCoords start, BoardCoords end)
         {
             PieceType pieceType = selectedPiece.pieceType;
@@ -106,7 +121,7 @@ namespace Assets.Scripts
                 // castle condition
                 if (wayLength == 1 && step.j == 0 && !selectedPiece.MovedInGame()) {
 
-                    // need write a check for beaten fields during the way
+                    // checking for attacked fields during the way
                     bool wayBeaten = false;
 
                     ChessPiece rookForCastle = GetPiece(end + step);
@@ -129,6 +144,7 @@ namespace Assets.Scripts
             return cursor.IsInsideBoard(this);
         }
 
+        // Clears the chessboard of all pieces
         public void Clear()
         {
             int iSize = board.GetLength(0);
@@ -144,6 +160,7 @@ namespace Assets.Scripts
             board = new ChessPiece[iSize, jSize];
         }
 
+        // Creates a copy of the current chessboard
         public ChessBoard GetCopy()
         {
             ChessBoard virtualBoard = new ChessBoard(iSize, jSize);
@@ -171,6 +188,7 @@ namespace Assets.Scripts
             return virtualBoard;
         }
 
+        // Simulates a move on a virtual board and returns the resulting board state
         public ChessBoard VirtualBoardAfterFreeMove(ChessMove chessMove)
         {
             ChessBoard virtualBoard = this.GetCopy();
@@ -179,6 +197,7 @@ namespace Assets.Scripts
             return virtualBoard;
         }
 
+        // Checks if a specific square is under attack by the opponent
         public bool IsSquareUnderAttack(BoardCoords square, PieceColor opponentColor)
         {
             for (int i = 0; i < iSize; i++) {
@@ -200,6 +219,7 @@ namespace Assets.Scripts
             return false;
         }
 
+        // Checks if the king of the specified color is in check
         public bool IsCheckOnTheBoard(PieceColor kingColor)
         {
             BoardCoords kingCoords;
@@ -214,7 +234,7 @@ namespace Assets.Scripts
                 for (int j = 0; j < jSize; j++)
                     if (board[i, j] != null) {
 
-                        // проверим, может ли фигура другого цвета пойти на поле короля
+                        // Check if a piece of the opposite color can move to the king's square
                         if (board[i, j].pieceColor == otherColor
                             && board[i, j].CanBeMovedTo(kingCoords))
                             return true;
@@ -222,13 +242,14 @@ namespace Assets.Scripts
             return false;
         }
 
-
+        // Places a new chess piece of the specified color and type at the given coordinates
         public ChessPiece PutNewPiece(PieceColor pieceColor, PieceType pieceType, BoardCoords coords)
         {
             int prefabIndex = (pieceColor == PieceColor.White) ? (int)pieceType : 11 - (int)pieceType;
             return PutNewPiece(prefabIndex, coords);
         }
 
+        // Places a new chess piece using a prefab index at the given coordinates
         public ChessPiece PutNewPiece(int prefabIndex, BoardCoords coords)
         {
             ChessPiece chessPiece = gameController.CreateNewPiece3D(prefabIndex, coords);
@@ -240,7 +261,7 @@ namespace Assets.Scripts
             SetPiece(chessPiece, coords);
             return chessPiece;
         }
-
+        // Sets up the chess
         public void SetStartChessPosition()
         {
             int[,] startPosition = new int[8, 8]

@@ -8,20 +8,24 @@ namespace Assets.Scripts
 {
     public class ChessKing: ChessPiece, IChessPiece
     {
+        /// <summary>
+        /// Generates the basic one-square moves a king can make in any direction
+        /// </summary>
+        /// <returns>List of possible basic king moves</returns> 
         private List<ChessMove> GenerateSimplePotentialMoves()
         {
             var moves = new List<ChessMove>();
-            int[] deltas = { -1, 0, 1 };
+            int[] deltas = { -1, 0, 1 };// Possible movement offsets in any direction
 
-            // Перебираем все возможные направления движения для короля
+            // Iterate through all possible movement directions for the king
             foreach (int dx in deltas) {
                 foreach (int dy in deltas) {
-                    // Исключаем случай, когда король не двигается (dx == 0 и dy == 0)
+                    // Skip the case where the king doesn't move (dx == 0 and dy == 0)
                     if (dx != 0 || dy != 0) {
                         BoardCoords step = new BoardCoords(dx, dy);
                         BoardCoords nextSquare = coords + step;
 
-                        // Проверяем, находится ли новая позиция внутри доски и свободна ли она или занята фигурой противника
+                        // Check if the new position is inside the board and either empty or occupied by an opponent's piece
                         if (nextSquare.IsInsideBoard(chessBoard)) {                            
                             ChessPiece pieceAtDestination = chessBoard.GetPiece(nextSquare.i, nextSquare.j);
                             if (chessBoard.IsSquareEmpty(nextSquare) || pieceAtDestination.pieceColor != pieceColor) {
@@ -33,23 +37,28 @@ namespace Assets.Scripts
             }
             return moves;
         }
+
+        /// <summary>
+        /// Generates all potential moves for the king, including both simple moves and castling
+        /// </summary>
+        /// <returns>Complete list of potential king moves</returns>
         public override List<ChessMove> GenerateAllPotentialMoves()
         {
-            
+            // Get the basic single-square moves first
             var moves = GenerateSimplePotentialMoves();
 
-            // Castling logic
-            var kingStartPosition = new BoardCoords(4, pawnStartLine - pawnDirection);
+            // Add castling moves if conditions are met
+            var kingStartPosition = new BoardCoords(4, pawnStartRow - pawnDirection);
 
-            if (prevCoords.Equals(kingStartPosition)) // King has not moved
+            if (prevCoords.Equals(kingStartPosition)) // King has not moved from its starting position
             {
-                // Check for kingside castling
+                // Check for kingside castling (to the right)
                 if (CanCastleKingside()) {
                     BoardCoords kingsideCastleSquare = new BoardCoords(coords.i + 2, coords.j);
                     moves.Add(new ChessMove(this, kingsideCastleSquare));
                 }
 
-                // Check for queenside castling
+                // Check for queenside castling (to the left)
                 if (CanCastleQueenside()) {
                     BoardCoords queensideCastleSquare = new BoardCoords(coords.i - 2, coords.j);
                     moves.Add(new ChessMove(this, queensideCastleSquare));
@@ -59,14 +68,19 @@ namespace Assets.Scripts
             return moves;
         }
 
+        /// <summary>
+        /// Verifies if kingside castling is possible
+        /// </summary>
+        /// <returns>True if kingside castling is allowed, false otherwise</returns>
         private bool CanCastleKingside()
         {
+            // Determine opponent's color to check for attacks
             PieceColor opponentColor = pieceColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
 
             // Check if the squares between king and rook are empty and not under attack
             for (int i = coords.i + 1; i <= coords.i + 2; i++) {
                 if (chessBoard.GetPiece(i, coords.j) != null || chessBoard.IsSquareUnderAttack(new BoardCoords(i, coords.j), opponentColor)) {
-                    return false;
+                    return false; // Square is occupied or under attack
                 }
             }
 
@@ -76,13 +90,19 @@ namespace Assets.Scripts
             return rook is ChessRook && rook.prevCoords.Equals(rookStartCoords) && rook.pieceColor == pieceColor;
         }
 
+        /// <summary>
+        /// Verifies if queenside castling is possible
+        /// </summary>
+        /// <returns>True if queenside castling is allowed, false otherwise</returns>
         private bool CanCastleQueenside()
         {
+            // Determine opponent's color to check for attacks
             PieceColor opponentColor = pieceColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
+            
             // Check if the squares between king and rook are empty and not under attack
             for (int i = coords.i - 1; i >= coords.i - 3; i--) {
                 if (chessBoard.GetPiece(i, coords.j) != null || chessBoard.IsSquareUnderAttack(new BoardCoords(i, coords.j), opponentColor)) {
-                    return false;
+                    return false; // Square is occupied or under attack
                 }
             }
 
@@ -93,25 +113,15 @@ namespace Assets.Scripts
             return rook is ChessRook && rook.prevCoords.Equals(rookStartCoords) && rook.pieceColor == pieceColor;
         }
 
-
+        /// <summary>
+        /// Generates a list of moves where the king can capture an opponent's piece
+        /// </summary>
+        /// <returns>List of possible capture moves for the king</returns>
         public override List<ChessMove> GenerateCaptureOpportunities()
         {
-            // Логика движения и взятия для короля одинакова
+            // The movement and capture logic for the king is the same (generates simple moves)
             var moves = GenerateSimplePotentialMoves();
-
-            // Исключаем рокировку из списка возможных взятий
-            var captureMoves = moves
-                .Where(move => !IsCastlingMove(move))
-                .ToList();
-
-            return captureMoves;
+            return moves;
         }
-
-        private bool IsCastlingMove(ChessMove move)
-        {
-            // Проверяем, является ли ход рокировкой
-            return Math.Abs(move.to.i - move.from.i) == 2 && move.from.j == pawnStartLine - pawnDirection;
-        }
-
     }
 }

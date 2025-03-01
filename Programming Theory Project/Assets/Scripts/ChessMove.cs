@@ -23,7 +23,7 @@ namespace Assets.Scripts
         {
             get {
                 char requestedPieceSymbol = ' ';
-                if (piece.isPawn && to.j == piece.pawnTransformLine)
+                if (piece.isPawn && to.j == piece.pawnPromotionRow)
                     requestedPieceSymbol = ChessPiece.PieceTypeSymbol(requestedTransformPiece);
 
                 if (requestedPieceSymbol == ' ')
